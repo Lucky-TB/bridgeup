@@ -1,0 +1,332 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  SafeAreaView,
+  TouchableOpacity,
+} from 'react-native';
+import { Image } from 'expo-image';
+import { Calendar, Heart, Eye } from 'lucide-react-native';
+import { theme } from '@/constants/theme';
+import Avatar from '@/components/ui/Avatar';
+import ThemeChip from '@/components/ui/ThemeChip';
+
+interface BridgeItem {
+  id: string;
+  themes: string[];
+  createdAt: Date;
+  metrics: {
+    views: number;
+    likes: number;
+  };
+  snapshots: {
+    yours: {
+      mediaPath: string;
+      text: string;
+    };
+    theirs: {
+      mediaPath: string;
+      text: string;
+      user: {
+        displayName: string;
+        photoURL: string;
+        city: string;
+      };
+    };
+  };
+}
+
+export default function BridgesScreen() {
+  const [bridges, setBridges] = useState<BridgeItem[]>([]);
+
+  // Mock data for demo
+  const mockBridges: BridgeItem[] = [
+    {
+      id: '1',
+      themes: ['food'],
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      metrics: { views: 12, likes: 5 },
+      snapshots: {
+        yours: {
+          mediaPath: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg',
+          text: 'My grandmother\'s secret pasta recipe - been in our family for generations',
+        },
+        theirs: {
+          mediaPath: 'https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg',
+          text: 'Street food from Bangkok that changed my perspective on flavors',
+          user: {
+            displayName: 'Alex',
+            photoURL: 'https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?w=150',
+            city: 'Bangkok',
+          },
+        },
+      },
+    },
+    {
+      id: '2',
+      themes: ['music', 'skills'],
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+      metrics: { views: 8, likes: 3 },
+      snapshots: {
+        yours: {
+          mediaPath: 'https://images.pexels.com/photos/1699161/pexels-photo-1699161.jpeg',
+          text: 'Learning guitar during lockdown - this song got me through tough times',
+        },
+        theirs: {
+          mediaPath: 'https://images.pexels.com/photos/1751731/pexels-photo-1751731.jpeg',
+          text: 'Jazz improvisation session - finding my voice through music',
+          user: {
+            displayName: 'Sam',
+            photoURL: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=150',
+            city: 'New York',
+          },
+        },
+      },
+    },
+  ];
+
+  useEffect(() => {
+    setBridges(mockBridges);
+  }, []);
+
+  const formatDate = (date: Date) => {
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    return date.toLocaleDateString();
+  };
+
+  const renderBridge = ({ item }: { item: BridgeItem }) => (
+    <TouchableOpacity style={styles.bridgeCard} activeOpacity={0.8}>
+      <View style={styles.bridgeHeader}>
+        <View style={styles.bridgeInfo}>
+          <View style={styles.themes}>
+            {item.themes.slice(0, 2).map((themeId) => {
+              const t = theme.themes.find(theme => theme.id === themeId);
+              return t ? (
+                <ThemeChip 
+                  key={themeId} 
+                  label={t.label} 
+                  emoji={t.emoji}
+                  style={styles.themeChip}
+                />
+              ) : null;
+            })}
+          </View>
+          <View style={styles.dateRow}>
+            <Calendar size={14} color={theme.colors.text.muted} />
+            <Text style={styles.dateText}>{formatDate(item.createdAt)}</Text>
+          </View>
+        </View>
+        <Avatar uri={item.snapshots.theirs.user.photoURL} size="small" />
+      </View>
+
+      <View style={styles.mediaRow}>
+        <View style={styles.snapshotContainer}>
+          <Text style={styles.snapshotLabel}>You</Text>
+          <Image 
+            source={{ uri: item.snapshots.yours.mediaPath }}
+            style={styles.snapshotImage}
+            contentFit="cover"
+          />
+          <Text style={styles.snapshotText} numberOfLines={2}>
+            {item.snapshots.yours.text}
+          </Text>
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.snapshotContainer}>
+          <Text style={styles.snapshotLabel}>
+            {item.snapshots.theirs.user.displayName}
+          </Text>
+          <Image 
+            source={{ uri: item.snapshots.theirs.mediaPath }}
+            style={styles.snapshotImage}
+            contentFit="cover"
+          />
+          <Text style={styles.snapshotText} numberOfLines={2}>
+            {item.snapshots.theirs.text}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.metrics}>
+        <View style={styles.metric}>
+          <Eye size={16} color={theme.colors.text.muted} />
+          <Text style={styles.metricText}>{item.metrics.views}</Text>
+        </View>
+        <View style={styles.metric}>
+          <Heart size={16} color={theme.colors.text.muted} />
+          <Text style={styles.metricText}>{item.metrics.likes}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderEmpty = () => (
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyTitle}>No bridges yet</Text>
+      <Text style={styles.emptySubtitle}>
+        Create your first snapshot to start building bridges with others
+      </Text>
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Your Bridges</Text>
+        <Text style={styles.subtitle}>
+          {bridges.length} bridge{bridges.length !== 1 ? 's' : ''} created
+        </Text>
+      </View>
+
+      <FlatList
+        data={bridges}
+        renderItem={renderBridge}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={[
+          styles.list,
+          bridges.length === 0 && styles.emptyList
+        ]}
+        ListEmptyComponent={renderEmpty}
+        showsVerticalScrollIndicator={false}
+      />
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  header: {
+    paddingTop: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.lg,
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  title: {
+    fontSize: theme.fontSize['3xl'],
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.text.primary,
+  },
+  subtitle: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.text.secondary,
+    marginTop: theme.spacing.xs,
+  },
+  list: {
+    padding: theme.spacing.lg,
+  },
+  emptyList: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  bridgeCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  bridgeHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+  bridgeInfo: {
+    flex: 1,
+  },
+  themes: {
+    flexDirection: 'row',
+    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
+  },
+  themeChip: {
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 2,
+  },
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+  },
+  dateText: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.text.muted,
+  },
+  mediaRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
+  },
+  snapshotContainer: {
+    flex: 1,
+  },
+  snapshotLabel: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.sm,
+  },
+  snapshotImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.sm,
+  },
+  snapshotText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.text.primary,
+    lineHeight: theme.fontSize.sm * 1.3,
+  },
+  divider: {
+    width: 1,
+    backgroundColor: theme.colors.border,
+    marginHorizontal: theme.spacing.sm,
+  },
+  metrics: {
+    flexDirection: 'row',
+    gap: theme.spacing.lg,
+  },
+  metric: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+  },
+  metricText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.text.muted,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingTop: theme.spacing['2xl'],
+  },
+  emptyTitle: {
+    fontSize: theme.fontSize.xl,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.sm,
+  },
+  emptySubtitle: {
+    fontSize: theme.fontSize.base,
+    color: theme.colors.text.secondary,
+    textAlign: 'center',
+    lineHeight: theme.fontSize.base * 1.4,
+  },
+});
