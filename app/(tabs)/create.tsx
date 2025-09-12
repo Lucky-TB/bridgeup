@@ -10,11 +10,12 @@ import {
   Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Camera, Image as ImageIcon, Mic } from 'lucide-react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { Camera, Image as ImageIcon, Mic, Video, Sparkles } from 'lucide-react-native';
 import { theme } from '@/constants/theme';
 import Button from '@/components/ui/Button';
 import ThemeChip from '@/components/ui/ThemeChip';
+import { MediaService } from '@/lib/services/media-service';
+import { AIMatchingService } from '@/lib/services/ai-matching-service';
 
 type Step = 'theme' | 'media' | 'preview';
 
@@ -23,7 +24,9 @@ export default function CreateScreen() {
   const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [text, setText] = useState('');
   const [mediaUri, setMediaUri] = useState<string | null>(null);
-  const [mediaType, setMediaType] = useState<'photo' | 'audio' | null>(null);
+  const [mediaType, setMediaType] = useState<'photo' | 'video' | 'audio' | null>(null);
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   const handleThemeToggle = (themeId: string) => {
     if (selectedThemes.includes(themeId)) {
@@ -34,29 +37,68 @@ export default function CreateScreen() {
   };
 
   const handlePickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-    });
-
-    if (!result.canceled) {
-      setMediaUri(result.assets[0].uri);
-      setMediaType('photo');
+    const result = await MediaService.pickPhoto();
+    if (result) {
+      setMediaUri(result.uri);
+      setMediaType(result.type);
     }
   };
 
   const handleTakePhoto = async () => {
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-    });
+    const result = await MediaService.takePhoto();
+    if (result) {
+      setMediaUri(result.uri);
+      setMediaType(result.type);
+    }
+  };
 
-    if (!result.canceled) {
-      setMediaUri(result.assets[0].uri);
-      setMediaType('photo');
+  const handleRecordVideo = async () => {
+    const result = await MediaService.recordVideo();
+    if (result) {
+      setMediaUri(result.uri);
+      setMediaType(result.type);
+    }
+  };
+
+  const handlePickVideo = async () => {
+    const result = await MediaService.pickVideo();
+    if (result) {
+      setMediaUri(result.uri);
+      setMediaType(result.type);
+    }
+  };
+
+  const handleShowMediaOptions = async () => {
+    const result = await MediaService.showMediaOptions();
+    if (result) {
+      setMediaUri(result.uri);
+      setMediaType(result.type);
+    }
+  };
+
+  const generateAISuggestions = async () => {
+    if (selectedThemes.length === 0) {
+      Alert.alert('Select Themes First', 'Please select themes before generating AI suggestions.');
+      return;
+    }
+
+    setIsGeneratingAI(true);
+    try {
+      // Simulate AI text generation
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const suggestions = [
+        `Share your ${selectedThemes[0]} experience from your perspective`,
+        `What makes your ${selectedThemes[0]} story unique?`,
+        `Describe a moment that changed your view on ${selectedThemes[0]}`,
+        `What would you teach someone about ${selectedThemes[0]}?`,
+      ];
+      
+      setAiSuggestions(suggestions);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to generate AI suggestions. Please try again.');
+    } finally {
+      setIsGeneratingAI(false);
     }
   };
 
@@ -66,8 +108,15 @@ export default function CreateScreen() {
       return;
     }
 
+    // Validate media
+    const validation = MediaService.validateMedia({ uri: mediaUri, type: mediaType! });
+    if (!validation.valid) {
+      Alert.alert('Invalid Media', validation.error || 'Please check your media file.');
+      return;
+    }
+
     // In a real app, this would upload to Firebase Storage and create a snapshot
-    Alert.alert('Success!', 'Your snapshot is being matched with someone new.');
+    Alert.alert('Success!', 'Your snapshot is being matched with someone new using AI-powered matching.');
     
     // Reset form
     setCurrentStep('theme');
@@ -75,6 +124,7 @@ export default function CreateScreen() {
     setText('');
     setMediaUri(null);
     setMediaType(null);
+    setAiSuggestions([]);
   };
 
   const renderThemeStep = () => (
@@ -110,18 +160,23 @@ export default function CreateScreen() {
     <View style={styles.stepContainer}>
       <Text style={styles.stepTitle}>Add your snapshot</Text>
       <Text style={styles.stepSubtitle}>
-        Share a photo that captures your moment
+        Share a photo or video that captures your moment
       </Text>
 
       {mediaUri ? (
         <View style={styles.mediaPreview}>
           <Image source={{ uri: mediaUri }} style={styles.previewImage} />
-          <TouchableOpacity 
-            style={styles.changeMediaButton}
-            onPress={() => setMediaUri(null)}
-          >
-            <Text style={styles.changeMediaText}>Change</Text>
-          </TouchableOpacity>
+          <View style={styles.mediaInfo}>
+            <Text style={styles.mediaTypeText}>
+              {mediaType === 'video' ? '📹 Video' : '📸 Photo'}
+            </Text>
+            <TouchableOpacity 
+              style={styles.changeMediaButton}
+              onPress={() => setMediaUri(null)}
+            >
+              <Text style={styles.changeMediaText}>Change</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       ) : (
         <View style={styles.mediaOptions}>
@@ -134,13 +189,37 @@ export default function CreateScreen() {
             <ImageIcon size={32} color={theme.colors.primary} />
             <Text style={styles.mediaOptionText}>Choose Photo</Text>
           </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.mediaOption} onPress={handleRecordVideo}>
+            <Video size={32} color={theme.colors.primary} />
+            <Text style={styles.mediaOptionText}>Record Video</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.mediaOption} onPress={handlePickVideo}>
+            <Video size={32} color={theme.colors.primary} />
+            <Text style={styles.mediaOptionText}>Choose Video</Text>
+          </TouchableOpacity>
         </View>
       )}
 
       <View style={styles.textInputContainer}>
+        <View style={styles.textInputHeader}>
+          <Text style={styles.textInputLabel}>Tell your story</Text>
+          <TouchableOpacity 
+            style={styles.aiButton}
+            onPress={generateAISuggestions}
+            disabled={isGeneratingAI}
+          >
+            <Sparkles size={16} color={theme.colors.primary} />
+            <Text style={styles.aiButtonText}>
+              {isGeneratingAI ? 'Generating...' : 'AI Help'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        
         <TextInput
           style={styles.textInput}
-          placeholder="Tell your story in a few words... (optional)"
+          placeholder="Share your cultural moment in a few words... (optional)"
           value={text}
           onChangeText={setText}
           maxLength={200}
@@ -148,6 +227,21 @@ export default function CreateScreen() {
           numberOfLines={4}
         />
         <Text style={styles.characterCount}>{text.length}/200</Text>
+        
+        {aiSuggestions.length > 0 && (
+          <View style={styles.aiSuggestions}>
+            <Text style={styles.aiSuggestionsTitle}>AI Suggestions:</Text>
+            {aiSuggestions.map((suggestion, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.aiSuggestionItem}
+                onPress={() => setText(suggestion)}
+              >
+                <Text style={styles.aiSuggestionText}>{suggestion}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </View>
 
       <View style={styles.buttonRow}>
@@ -292,13 +386,14 @@ const styles = StyleSheet.create({
   },
   mediaOptions: {
     flexDirection: 'row',
-    gap: theme.spacing.lg,
+    flexWrap: 'wrap',
+    gap: theme.spacing.md,
     marginBottom: theme.spacing.xl,
   },
   mediaOption: {
-    flex: 1,
+    width: '48%',
     alignItems: 'center',
-    padding: theme.spacing.xl,
+    padding: theme.spacing.lg,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     borderWidth: 2,
@@ -310,6 +405,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.medium,
     color: theme.colors.text.secondary,
+    textAlign: 'center',
   },
   mediaPreview: {
     marginBottom: theme.spacing.xl,
@@ -318,10 +414,20 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 240,
     borderRadius: theme.borderRadius.lg,
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+  },
+  mediaInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  mediaTypeText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.text.secondary,
+    fontWeight: theme.fontWeight.medium,
   },
   changeMediaButton: {
-    alignSelf: 'center',
+    padding: theme.spacing.sm,
   },
   changeMediaText: {
     fontSize: theme.fontSize.sm,
@@ -330,6 +436,31 @@ const styles = StyleSheet.create({
   },
   textInputContainer: {
     marginBottom: theme.spacing.xl,
+  },
+  textInputHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+  textInputLabel: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.text.primary,
+  },
+  aiButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    backgroundColor: theme.colors.primary + '10',
+    borderRadius: theme.borderRadius.sm,
+  },
+  aiButtonText: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.primary,
+    fontWeight: theme.fontWeight.medium,
   },
   textInput: {
     backgroundColor: theme.colors.surface,
@@ -345,6 +476,30 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.sm,
     fontSize: theme.fontSize.xs,
     color: theme.colors.text.muted,
+  },
+  aiSuggestions: {
+    marginTop: theme.spacing.md,
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.primary + '05',
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.primary + '20',
+  },
+  aiSuggestionsTitle: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.sm,
+  },
+  aiSuggestionItem: {
+    paddingVertical: theme.spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+  },
+  aiSuggestionText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.text.secondary,
+    lineHeight: theme.fontSize.sm * 1.4,
   },
   buttonRow: {
     flexDirection: 'row',

@@ -4,9 +4,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "EXPO_NO_TELEMETRY=1 expo start",
+    "dev": "expo start",
+    "dev:no-telemetry": "cross-env EXPO_NO_TELEMETRY=1 expo start",
     "build:web": "expo export --platform web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "seed": "tsx scripts/seed-data.ts"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.1",
@@ -14,7 +16,7 @@
     "@lucide/lab": "^0.1.2",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
-    "expo": "^53.0.0",
+    "expo": "^53.0.22",
     "expo-blur": "~14.1.3",
     "expo-camera": "~16.1.5",
     "expo-constants": "~17.1.3",
@@ -46,6 +48,8 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "~19.0.10",
-    "typescript": "~5.8.3"
+    "typescript": "~5.8.3",
+    "tsx": "^4.7.0",
+    "firebase": "^10.7.1"
   }
 }
