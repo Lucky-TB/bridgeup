@@ -8,13 +8,16 @@ import {
   RefreshControl,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
-import { Bell, Sparkles, Trophy, Zap } from 'lucide-react-native';
+import { Bell, MessageCircle, MoreHorizontal, Heart, MessageCircle as Comment, Send, Bookmark } from 'lucide-react-native';
+import { Image } from 'expo-image';
 import { db } from '@/lib/firebase';
 import { theme } from '@/constants/theme';
 import CardBridge from '@/components/cards/CardBridge';
 import ThemeChip from '@/components/ui/ThemeChip';
+import Avatar from '@/components/ui/Avatar';
 import { Bridge, Snapshot, User } from '@/lib/types';
 import { AIMatchingService } from '@/lib/services/ai-matching-service';
 import { useRealtimeNotifications, useLiveInteractions, useRealtimeCounts } from '@/lib/services/realtime-service';
@@ -183,7 +186,7 @@ export default function TodayScreen() {
     ? bridges.filter(bridge => bridge.themes.includes(selectedTheme))
     : bridges;
 
-  const renderBridge = ({ item }: { item: Bridge }) => {
+  const renderInstagramPost = ({ item }: { item: Bridge }) => {
     const leftSnapshot = mockSnapshots[item.leftSnapshotId as keyof typeof mockSnapshots];
     const rightSnapshot = mockSnapshots[item.rightSnapshotId as keyof typeof mockSnapshots];
     const leftUser = mockUsers[leftSnapshot.userId as keyof typeof mockUsers];
@@ -193,16 +196,88 @@ export default function TodayScreen() {
     const likeCount = (counts[item.id] || 0) + item.metrics.likes;
 
     return (
-      <CardBridge
-        bridge={{ ...item, metrics: { ...item.metrics, likes: likeCount } }}
-        leftSnapshot={leftSnapshot}
-        rightSnapshot={rightSnapshot}
-        leftUser={leftUser}
-        rightUser={rightUser}
-        onLike={() => handleLike(item.id)}
-        onSave={() => handleSave(item.id)}
-        onShare={() => handleShare(item.id)}
-      />
+      <View style={styles.postContainer}>
+        {/* Post Header */}
+        <View style={styles.postHeader}>
+          <View style={styles.userInfo}>
+            <Avatar uri={leftUser?.photoURL} size="small" />
+            <View style={styles.userDetails}>
+              <Text style={styles.username}>{leftUser?.displayName}</Text>
+              <Text style={styles.location}>Bridge with {rightUser?.displayName}</Text>
+            </View>
+          </View>
+          <TouchableOpacity onPress={() => showComingSoon('More Options')}>
+            <MoreHorizontal size={20} color={theme.colors.text.primary} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Post Content - Bridge Images */}
+        <View style={styles.postContent}>
+          <View style={styles.bridgeImages}>
+            <View style={styles.bridgeImageContainer}>
+              <Image 
+                source={{ uri: leftSnapshot.mediaPath }}
+                style={styles.bridgeImage}
+                contentFit="cover"
+              />
+            </View>
+            <View style={styles.bridgeDivider} />
+            <View style={styles.bridgeImageContainer}>
+              <Image 
+                source={{ uri: rightSnapshot.mediaPath }}
+                style={styles.bridgeImage}
+                contentFit="cover"
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* Post Actions */}
+        <View style={styles.postActions}>
+          <View style={styles.leftActions}>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => handleLike(item.id)}
+            >
+              <Heart size={24} color={theme.colors.text.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => showComingSoon('Comments')}
+            >
+              <Comment size={24} color={theme.colors.text.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => handleShare(item.id)}
+            >
+              <Send size={24} color={theme.colors.text.primary} />
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => handleSave(item.id)}
+          >
+            <Bookmark size={24} color={theme.colors.text.primary} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Post Caption */}
+        <View style={styles.postCaption}>
+          <Text style={styles.likesText}>{likeCount} likes</Text>
+          <View style={styles.captionContainer}>
+            <Text style={styles.captionText}>
+              <Text style={styles.captionUsername}>{leftUser?.displayName}</Text> {leftSnapshot.text}
+            </Text>
+            <Text style={styles.captionText}>
+              <Text style={styles.captionUsername}>{rightUser?.displayName}</Text> {rightSnapshot.text}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={() => showComingSoon('View Comments')}>
+            <Text style={styles.viewCommentsText}>View all comments</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     );
   };
 
@@ -228,93 +303,69 @@ export default function TodayScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Instagram-style Header */}
       <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <Text style={styles.title}>Today</Text>
-          <View style={styles.headerActions}>
-            <TouchableOpacity 
-              style={styles.notificationButton}
-              onPress={() => showComingSoon('Notifications')}
-            >
-              <Bell size={20} color={theme.colors.text.secondary} />
-              {unreadCount > 0 && (
-                <View style={styles.notificationBadge}>
-                  <Text style={styles.notificationBadgeText}>{unreadCount}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.statsButton}
-              onPress={() => showComingSoon('User Stats')}
-            >
-              <Trophy size={20} color={theme.colors.text.secondary} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* AI Suggestions */}
-        {aiSuggestions.length > 0 && (
-          <View style={styles.aiSuggestionsContainer}>
-            <TouchableOpacity 
-              style={styles.aiToggle}
-              onPress={() => setShowAiSuggestions(!showAiSuggestions)}
-            >
-              <Zap size={16} color={theme.colors.primary} />
-              <Text style={styles.aiToggleText}>
-                AI Suggestions ({aiSuggestions.length})
-              </Text>
-            </TouchableOpacity>
-            
-            {showAiSuggestions && (
-              <FlatList
-                data={aiSuggestions}
-                renderItem={renderAISuggestion}
-                keyExtractor={(item) => item.snapshot.id}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.aiSuggestionsList}
-              />
+        <Text style={styles.logo}>BridgeUp</Text>
+        <View style={styles.headerActions}>
+          <TouchableOpacity 
+            style={styles.headerButton}
+            onPress={() => showComingSoon('Messages')}
+          >
+            <MessageCircle size={24} color={theme.colors.text.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.headerButton}
+            onPress={() => showComingSoon('Notifications')}
+          >
+            <Bell size={24} color={theme.colors.text.primary} />
+            {unreadCount > 0 && (
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationBadgeText}>{unreadCount}</Text>
+              </View>
             )}
-          </View>
-        )}
-
-        {/* User Stats */}
-        {userStats && (
-          <View style={styles.statsContainer}>
-            <Text style={styles.statsText}>
-              Level {userStats.level} • {userStats.totalPoints} points • {userStats.bridgesCreated} bridges
-            </Text>
-          </View>
-        )}
-
-        <FlatList
-          data={theme.themes}
-          renderItem={({ item }) => (
-            <ThemeChip
-              label={item.label}
-              emoji={item.emoji}
-              selected={selectedTheme === item.id}
-              onPress={() => setSelectedTheme(
-                selectedTheme === item.id ? null : item.id
-              )}
-              style={styles.themeChip}
-            />
-          )}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.themeList}
-        />
+          </TouchableOpacity>
+        </View>
       </View>
 
+      {/* Stories Section */}
+      <View style={styles.storiesContainer}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.storiesList}
+        >
+          {/* Your Story */}
+          <TouchableOpacity style={styles.storyItem} onPress={() => showComingSoon('Add Story')}>
+            <View style={styles.yourStoryCircle}>
+              <Avatar uri={mockUsers.user1.photoURL} size="medium" />
+              <View style={styles.addStoryIcon}>
+                <Text style={styles.addStoryText}>+</Text>
+              </View>
+            </View>
+            <Text style={styles.storyText}>Your story</Text>
+          </TouchableOpacity>
+
+          {/* Other Stories */}
+          {Object.values(mockUsers).slice(1).map((user) => (
+            <TouchableOpacity key={user.id} style={styles.storyItem} onPress={() => showComingSoon('View Story')}>
+              <View style={styles.storyCircle}>
+                <Avatar uri={user.photoURL} size="medium" />
+              </View>
+              <Text style={styles.storyText} numberOfLines={1}>{user.displayName}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Main Feed */}
       <FlatList
         data={filteredBridges}
-        renderItem={renderBridge}
+        renderItem={renderInstagramPost}
         keyExtractor={(item) => item.id}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        contentContainerStyle={styles.bridgeList}
+        contentContainerStyle={styles.feedList}
         showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
@@ -326,30 +377,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
+  // Instagram-style Header
   header: {
-    paddingTop: theme.spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
     backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.md,
-  },
-  title: {
-    fontSize: theme.fontSize['3xl'],
+  logo: {
+    fontSize: theme.fontSize['2xl'],
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.text.primary,
   },
   headerActions: {
     flexDirection: 'row',
-    gap: theme.spacing.md,
+    gap: theme.spacing.lg,
   },
-  notificationButton: {
+  headerButton: {
     position: 'relative',
     padding: theme.spacing.sm,
   },
@@ -369,79 +417,152 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.xs,
     fontWeight: theme.fontWeight.bold,
   },
-  statsButton: {
-    padding: theme.spacing.sm,
+  // Stories Section
+  storiesContainer: {
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    paddingVertical: theme.spacing.md,
   },
-  aiSuggestionsContainer: {
-    marginBottom: theme.spacing.md,
+  storiesList: {
+    paddingHorizontal: theme.spacing.lg,
   },
-  aiToggle: {
-    flexDirection: 'row',
+  storyItem: {
     alignItems: 'center',
-    gap: theme.spacing.sm,
-    paddingVertical: theme.spacing.sm,
+    marginRight: theme.spacing.lg,
   },
-  aiToggleText: {
+  yourStoryCircle: {
+    position: 'relative',
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 2,
+    borderColor: theme.colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  storyCircle: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addStoryIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: theme.colors.surface,
+  },
+  addStoryText: {
+    color: theme.colors.surface,
     fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.primary,
+    fontWeight: theme.fontWeight.bold,
   },
-  aiSuggestionsList: {
-    paddingVertical: theme.spacing.sm,
+  storyText: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.text.primary,
+    marginTop: theme.spacing.xs,
+    maxWidth: 70,
   },
-  suggestionCard: {
-    backgroundColor: theme.colors.primary + '10',
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-    marginRight: theme.spacing.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.primary + '20',
-    minWidth: 200,
+  // Feed Section
+  feedList: {
+    paddingBottom: theme.spacing.xl,
   },
-  suggestionHeader: {
+  // Post Styles
+  postContainer: {
+    backgroundColor: theme.colors.surface,
+    marginBottom: theme.spacing.lg,
+  },
+  postHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+  },
+  userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
   },
-  suggestionTitle: {
+  userDetails: {
+    marginLeft: theme.spacing.md,
+  },
+  username: {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.primary,
+    color: theme.colors.text.primary,
+  },
+  location: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.text.secondary,
+    marginTop: 2,
+  },
+  postContent: {
+    backgroundColor: theme.colors.background,
+  },
+  bridgeImages: {
+    flexDirection: 'row',
+    height: 300,
+  },
+  bridgeImageContainer: {
     flex: 1,
   },
-  suggestionScore: {
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.primary,
-    backgroundColor: theme.colors.primary + '20',
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: 2,
-    borderRadius: 10,
+  bridgeImage: {
+    width: '100%',
+    height: '100%',
   },
-  suggestionReason: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.text.secondary,
-    lineHeight: theme.fontSize.xs * 1.4,
+  bridgeDivider: {
+    width: 1,
+    backgroundColor: theme.colors.border,
   },
-  statsContainer: {
-    backgroundColor: theme.colors.background,
-    borderRadius: theme.borderRadius.md,
+  postActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+  },
+  leftActions: {
+    flexDirection: 'row',
+    gap: theme.spacing.lg,
+  },
+  actionButton: {
     padding: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
   },
-  statsText: {
+  postCaption: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.lg,
+  },
+  likesText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.sm,
+  },
+  captionContainer: {
+    marginBottom: theme.spacing.sm,
+  },
+  captionText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.text.primary,
+    lineHeight: theme.fontSize.sm * 1.4,
+    marginBottom: theme.spacing.xs,
+  },
+  captionUsername: {
+    fontWeight: theme.fontWeight.semibold,
+  },
+  viewCommentsText: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.text.secondary,
-    textAlign: 'center',
-  },
-  themeList: {
-    paddingHorizontal: theme.spacing.xs,
-  },
-  themeChip: {
-    marginHorizontal: theme.spacing.xs,
-  },
-  bridgeList: {
-    paddingVertical: theme.spacing.lg,
   },
 });

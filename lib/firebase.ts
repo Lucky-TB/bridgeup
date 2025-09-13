@@ -3,18 +3,25 @@ import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 
-// Firebase configuration - Replace with your actual config
+// Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "demo-api-key",
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || "bridgeup-demo.firebaseapp.com",
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "bridgeup-demo",
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || "bridgeup-demo.appspot.com",
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "demo-app-id"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || "AIzaSyDxztbViWLcqN91AjuMRvIsDM6UzMsTZGs",
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || "bridgeup-96d98.firebaseapp.com",
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || "bridgeup-96d98",
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || "bridgeup-96d98.firebasestorage.app",
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "1038272509851",
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || "1:1038272509851:web:58d56a5af311068e72533e",
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-CZK7YVVJEH"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Log configuration status (only in development)
+if (__DEV__) {
+  console.log('Firebase initialized with project:', firebaseConfig.projectId);
+  console.log('Using environment variables:', !!process.env.EXPO_PUBLIC_FIREBASE_API_KEY);
+}
 
 // Initialize Firebase services
 export const auth = getAuth(app);
