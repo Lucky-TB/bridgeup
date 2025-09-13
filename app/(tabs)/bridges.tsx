@@ -6,12 +6,15 @@ import {
   StyleSheet,
   SafeAreaView,
   TouchableOpacity,
+  RefreshControl,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Calendar, Heart, Eye } from 'lucide-react-native';
 import { theme } from '@/constants/theme';
 import Avatar from '@/components/ui/Avatar';
 import ThemeChip from '@/components/ui/ThemeChip';
+import { useBridges } from '@/contexts/BridgeContext';
+import { BridgeService } from '@/lib/services/bridge-service';
 
 interface BridgeItem {
   id: string;
@@ -39,57 +42,49 @@ interface BridgeItem {
 }
 
 export default function BridgesScreen() {
-  const [bridges, setBridges] = useState<BridgeItem[]>([]);
+  const { bridges, loading, refreshBridges } = useBridges();
+  const [bridgesWithSnapshots, setBridgesWithSnapshots] = useState<Array<BridgeItem>>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Mock data for demo
-  const mockBridges: BridgeItem[] = [
-    {
-      id: '1',
-      themes: ['food'],
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-      metrics: { views: 12, likes: 5 },
-      snapshots: {
-        yours: {
-          mediaPath: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg',
-          text: 'My grandmother\'s secret pasta recipe - been in our family for generations',
-        },
-        theirs: {
-          mediaPath: 'https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg',
-          text: 'Street food from Bangkok that changed my perspective on flavors',
-          user: {
-            displayName: 'Alex',
-            photoURL: 'https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?w=150',
-            city: 'Bangkok',
+  const loadBridgesWithSnapshots = async () => {
+    try {
+      const bridgesData = await BridgeService.getBridgesWithSnapshots();
+      const formattedBridges: BridgeItem[] = bridgesData.map(bridge => ({
+        id: bridge.id,
+        themes: bridge.themes,
+        createdAt: bridge.createdAt,
+        metrics: bridge.metrics,
+        snapshots: {
+          yours: {
+            mediaPath: bridge.leftSnapshot.mediaPath,
+            text: bridge.leftSnapshot.text,
+          },
+          theirs: {
+            mediaPath: bridge.rightSnapshot.mediaPath,
+            text: bridge.rightSnapshot.text,
+            user: {
+              displayName: 'Matched User', // In a real app, this would come from user data
+              photoURL: 'https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?w=150',
+              city: 'Unknown',
+            },
           },
         },
-      },
-    },
-    {
-      id: '2',
-      themes: ['music', 'skills'],
-      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-      metrics: { views: 8, likes: 3 },
-      snapshots: {
-        yours: {
-          mediaPath: 'https://images.pexels.com/photos/1699161/pexels-photo-1699161.jpeg',
-          text: 'Learning guitar during lockdown - this song got me through tough times',
-        },
-        theirs: {
-          mediaPath: 'https://images.pexels.com/photos/1751731/pexels-photo-1751731.jpeg',
-          text: 'Jazz improvisation session - finding my voice through music',
-          user: {
-            displayName: 'Sam',
-            photoURL: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=150',
-            city: 'New York',
-          },
-        },
-      },
-    },
-  ];
+      }));
+      setBridgesWithSnapshots(formattedBridges);
+    } catch (error) {
+      console.error('Error loading bridges with snapshots:', error);
+    }
+  };
 
   useEffect(() => {
-    setBridges(mockBridges);
-  }, []);
+    loadBridgesWithSnapshots();
+  }, [bridges]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refreshBridges();
+    setRefreshing(false);
+  };
 
   const formatDate = (date: Date) => {
     const now = new Date();
@@ -183,20 +178,23 @@ export default function BridgesScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Your Bridges</Text>
         <Text style={styles.subtitle}>
-          {bridges.length} bridge{bridges.length !== 1 ? 's' : ''} created
+          {bridgesWithSnapshots.length} bridge{bridgesWithSnapshots.length !== 1 ? 's' : ''} created
         </Text>
       </View>
 
       <FlatList
-        data={bridges}
+        data={bridgesWithSnapshots}
         renderItem={renderBridge}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[
           styles.list,
-          bridges.length === 0 && styles.emptyList
+          bridgesWithSnapshots.length === 0 && styles.emptyList
         ]}
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
     </SafeAreaView>
   );

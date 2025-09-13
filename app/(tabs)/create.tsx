@@ -16,10 +16,13 @@ import Button from '@/components/ui/Button';
 import ThemeChip from '@/components/ui/ThemeChip';
 import { MediaService } from '@/lib/services/media-service';
 import { AIMatchingService } from '@/lib/services/ai-matching-service';
+import { useBridges } from '@/contexts/BridgeContext';
+import { BridgeService } from '@/lib/services/bridge-service';
 
 type Step = 'theme' | 'media' | 'preview';
 
 export default function CreateScreen() {
+  const { refreshBridges } = useBridges();
   const [currentStep, setCurrentStep] = useState<Step>('theme');
   const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [text, setText] = useState('');
@@ -27,6 +30,7 @@ export default function CreateScreen() {
   const [mediaType, setMediaType] = useState<'photo' | 'video' | 'audio' | null>(null);
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [isPosting, setIsPosting] = useState(false);
 
   const handleThemeToggle = (themeId: string) => {
     if (selectedThemes.includes(themeId)) {
@@ -115,16 +119,59 @@ export default function CreateScreen() {
       return;
     }
 
-    // In a real app, this would upload to Firebase Storage and create a snapshot
-    Alert.alert('Success!', 'Your snapshot is being matched with someone new using AI-powered matching.');
+    setIsPosting(true);
     
-    // Reset form
-    setCurrentStep('theme');
-    setSelectedThemes([]);
-    setText('');
-    setMediaUri(null);
-    setMediaType(null);
-    setAiSuggestions([]);
+    try {
+      // Create snapshot
+      const snapshot = await BridgeService.createSnapshot({
+        userId: 'current_user_id', // In a real app, this would be the authenticated user's ID
+        mediaType: mediaType === 'video' ? 'photo' : 'photo', // Simplified for demo
+        mediaPath: mediaUri,
+        text: text || 'No description provided',
+        themes: selectedThemes,
+        locale: 'en',
+        pendingMatch: true,
+      });
+
+      // Create bridge with AI matching
+      const bridge = await BridgeService.createBridgeFromSnapshot(snapshot);
+      
+      if (bridge) {
+        // Refresh the bridges list
+        await refreshBridges();
+        
+        Alert.alert(
+          'Success!', 
+          'Your snapshot has been matched and a new bridge has been created! Check the Bridges tab to see it.',
+          [
+            {
+              text: 'View Bridges',
+              onPress: () => {
+                // In a real app, this would navigate to the bridges tab
+                console.log('Navigate to bridges tab');
+              }
+            },
+            { text: 'OK' }
+          ]
+        );
+      } else {
+        Alert.alert('Processing...', 'Your snapshot is being processed. A bridge will be created once we find a match!');
+      }
+      
+      // Reset form
+      setCurrentStep('theme');
+      setSelectedThemes([]);
+      setText('');
+      setMediaUri(null);
+      setMediaType(null);
+      setAiSuggestions([]);
+      
+    } catch (error) {
+      console.error('Error creating post:', error);
+      Alert.alert('Error', 'Failed to create your post. Please try again.');
+    } finally {
+      setIsPosting(false);
+    }
   };
 
   const renderThemeStep = () => (
@@ -295,8 +342,9 @@ export default function CreateScreen() {
           style={styles.backButton}
         />
         <Button
-          title="Post"
+          title={isPosting ? "Creating..." : "Post"}
           onPress={handlePost}
+          disabled={isPosting}
           style={styles.postButton}
         />
       </View>
