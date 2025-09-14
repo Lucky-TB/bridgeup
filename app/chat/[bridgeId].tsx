@@ -14,11 +14,12 @@ import {
   Alert
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { theme } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
 import { ChatService, ChatMessage, ChatUser } from '@/lib/services/chat-service';
 import { BridgeService } from '@/lib/services/bridge-service';
 
 export default function ChatScreen() {
+  const { colors } = useTheme();
   const { bridgeId } = useLocalSearchParams<{ bridgeId: string }>();
   const router = useRouter();
   const flatListRef = useRef<FlatList>(null);
@@ -124,17 +125,17 @@ export default function ChatScreen() {
       )}
       <View style={[
         styles.messageBubble,
-        item.isUser ? styles.userBubble : styles.botBubble
+        item.isUser ? [styles.userBubble, { backgroundColor: colors.primary }] : [styles.botBubble, { backgroundColor: colors.surface }]
       ]}>
         <Text style={[
           styles.messageText,
-          item.isUser ? styles.userText : styles.botText
+          item.isUser ? styles.userText : [styles.botText, { color: colors.text.primary }]
         ]}>
           {item.text}
         </Text>
         <Text style={[
           styles.timestamp,
-          item.isUser ? styles.userTimestamp : styles.botTimestamp
+          item.isUser ? styles.userTimestamp : [styles.botTimestamp, { color: colors.text.secondary }]
         ]}>
           {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </Text>
@@ -144,34 +145,34 @@ export default function ChatScreen() {
 
   if (isInitializing) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={styles.loadingText}>Starting conversation...</Text>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.text.secondary }]}>Starting conversation...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Text style={[styles.backButtonText, { color: colors.primary }]}>← Back</Text>
         </TouchableOpacity>
         <View style={styles.headerInfo}>
           {chatUser?.photoURL ? (
           <Image source={{ uri: chatUser.photoURL }} style={styles.headerAvatar} />
         ) : (
           <View style={[styles.headerAvatar, styles.placeholderAvatar]}>
-            <Text style={styles.placeholderText}>
+            <Text style={[styles.placeholderText, { color: colors.text.muted }]}>
               {chatUser?.displayName?.charAt(0) || '?'}
             </Text>
           </View>
         )}
           <View>
-            <Text style={styles.headerName}>{chatUser?.displayName}</Text>
-            <Text style={styles.headerSubtitle}>Skill Sharing Chat</Text>
+            <Text style={[styles.headerName, { color: colors.text.primary }]}>{chatUser?.displayName}</Text>
+            <Text style={[styles.headerSubtitle, { color: colors.text.secondary }]}>Skill Sharing Chat</Text>
           </View>
         </View>
       </View>
@@ -191,17 +192,18 @@ export default function ChatScreen() {
           onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
         />
 
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, { borderColor: colors.border, color: colors.text.primary }]}
             value={inputText}
             onChangeText={setInputText}
             placeholder="Ask about their skills..."
+            placeholderTextColor={colors.text.secondary}
             multiline
             maxLength={500}
           />
           <TouchableOpacity
-            style={[styles.sendButton, (!inputText.trim() || isLoading) && styles.sendButtonDisabled]}
+            style={[styles.sendButton, { backgroundColor: colors.primary }, (!inputText.trim() || isLoading) && styles.sendButtonDisabled]}
             onPress={sendMessage}
             disabled={!inputText.trim() || isLoading}
           >

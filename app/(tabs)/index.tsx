@@ -11,10 +11,10 @@ import {
   ScrollView,
 } from 'react-native';
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
-import { Bell, MessageCircle, MoreHorizontal, Heart, MessageCircle as Comment, Send, Bookmark } from 'lucide-react-native';
+import { Bell, MessageCircle, MoreHorizontal, Heart, MessageCircle as Comment, Send, Bookmark, Sparkles } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { db } from '@/lib/firebase';
-import { theme } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
 import CardBridge from '@/components/cards/CardBridge';
 import ThemeChip from '@/components/ui/ThemeChip';
 import Avatar from '@/components/ui/Avatar';
@@ -24,6 +24,7 @@ import { useRealtimeNotifications, useLiveInteractions, useRealtimeCounts } from
 import { GamificationService } from '@/lib/services/gamification-service';
 
 export default function TodayScreen() {
+  const { colors } = useTheme();
   const [bridges, setBridges] = useState<Bridge[]>([]);
   const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -203,18 +204,18 @@ export default function TodayScreen() {
     const likeCount = (counts[item.id] || 0) + item.metrics.likes;
 
     return (
-      <View style={styles.postContainer}>
+      <View style={[styles.postContainer, { backgroundColor: colors.surface }]}>
         {/* Post Header */}
         <View style={styles.postHeader}>
           <View style={styles.userInfo}>
             <Avatar uri={leftUser?.photoURL} size="small" />
             <View style={styles.userDetails}>
-              <Text style={styles.username}>{leftUser?.displayName}</Text>
-              <Text style={styles.location}>Bridge with {rightUser?.displayName}</Text>
+              <Text style={[styles.username, { color: colors.text.primary }]}>{leftUser?.displayName}</Text>
+              <Text style={[styles.location, { color: colors.text.secondary }]}>Bridge with {rightUser?.displayName}</Text>
             </View>
           </View>
           <TouchableOpacity onPress={() => showComingSoon('More Options')}>
-            <MoreHorizontal size={20} color={theme.colors.text.primary} />
+            <MoreHorizontal size={20} color={colors.text.primary} />
           </TouchableOpacity>
         </View>
 
@@ -246,42 +247,42 @@ export default function TodayScreen() {
               style={styles.actionButton}
               onPress={() => handleLike(item.id)}
             >
-              <Heart size={24} color={theme.colors.text.primary} />
+              <Heart size={24} color={colors.text.primary} />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={() => showComingSoon('Comments')}
             >
-              <Comment size={24} color={theme.colors.text.primary} />
+              <Comment size={24} color={colors.text.primary} />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={() => handleShare(item.id)}
             >
-              <Send size={24} color={theme.colors.text.primary} />
+              <Send size={24} color={colors.text.primary} />
             </TouchableOpacity>
           </View>
           <TouchableOpacity 
             style={styles.actionButton}
             onPress={() => handleSave(item.id)}
           >
-            <Bookmark size={24} color={theme.colors.text.primary} />
+            <Bookmark size={24} color={colors.text.primary} />
           </TouchableOpacity>
         </View>
 
         {/* Post Caption */}
         <View style={styles.postCaption}>
-          <Text style={styles.likesText}>{likeCount} likes</Text>
+          <Text style={[styles.likesText, { color: colors.text.primary }]}>{likeCount} likes</Text>
           <View style={styles.captionContainer}>
-            <Text style={styles.captionText}>
-              <Text style={styles.captionUsername}>{leftUser?.displayName}</Text> {leftSnapshot.text}
+            <Text style={[styles.captionText, { color: colors.text.primary }]}>
+              <Text style={[styles.captionUsername, { color: colors.text.primary }]}>{leftUser?.displayName}</Text> {leftSnapshot.text}
             </Text>
-            <Text style={styles.captionText}>
-              <Text style={styles.captionUsername}>{rightUser?.displayName}</Text> {rightSnapshot.text}
+            <Text style={[styles.captionText, { color: colors.text.primary }]}>
+              <Text style={[styles.captionUsername, { color: colors.text.primary }]}>{rightUser?.displayName}</Text> {rightSnapshot.text}
             </Text>
           </View>
           <TouchableOpacity onPress={() => showComingSoon('View Comments')}>
-            <Text style={styles.viewCommentsText}>View all comments</Text>
+            <Text style={[styles.viewCommentsText, { color: colors.text.secondary }]}>View all comments</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -294,40 +295,40 @@ export default function TodayScreen() {
     
     return (
       <TouchableOpacity 
-        style={styles.suggestionCard}
+        style={[styles.suggestionCard, { backgroundColor: colors.surface }]}
         onPress={() => showComingSoon('AI Bridge Creation')}
         activeOpacity={0.7}
       >
         <View style={styles.suggestionHeader}>
-          <Sparkles size={16} color={theme.colors.primary} />
-          <Text style={styles.suggestionTitle}>AI Suggested Match</Text>
-          <Text style={styles.suggestionScore}>{Math.round(item.score * 100)}% match</Text>
+          <Sparkles size={16} color={colors.primary} />
+          <Text style={[styles.suggestionTitle, { color: colors.text.primary }]}>AI Suggested Match</Text>
+          <Text style={[styles.suggestionScore, { color: colors.text.secondary }]}>{Math.round(item.score * 100)}% match</Text>
         </View>
-        <Text style={styles.suggestionReason}>{item.reasons[0]}</Text>
+        <Text style={[styles.suggestionReason, { color: colors.text.primary }]}>{item.reasons[0]}</Text>
       </TouchableOpacity>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Instagram-style Header */}
-      <View style={styles.header}>
-        <Text style={styles.logo}>BridgeUp</Text>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <Text style={[styles.logo, { color: colors.text.primary }]}>BridgeUp</Text>
         <View style={styles.headerActions}>
           <TouchableOpacity 
             style={styles.headerButton}
             onPress={() => showComingSoon('Messages')}
           >
-            <MessageCircle size={24} color={theme.colors.text.primary} />
+            <MessageCircle size={24} color={colors.text.primary} />
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.headerButton}
             onPress={() => showComingSoon('Notifications')}
           >
-            <Bell size={24} color={theme.colors.text.primary} />
+            <Bell size={24} color={colors.text.primary} />
             {unreadCount > 0 && (
-              <View style={styles.notificationBadge}>
-                <Text style={styles.notificationBadgeText}>{unreadCount}</Text>
+              <View style={[styles.notificationBadge, { backgroundColor: colors.error }]}>
+                <Text style={[styles.notificationBadgeText, { color: 'white' }]}>{unreadCount}</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -382,37 +383,32 @@ export default function TodayScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
   },
   // Instagram-style Header
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
   },
   logo: {
-    fontSize: theme.fontSize['2xl'],
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
+    fontSize: 24,
+    fontWeight: '700',
   },
   headerActions: {
     flexDirection: 'row',
-    gap: theme.spacing.lg,
+    gap: 16,
   },
   headerButton: {
     position: 'relative',
-    padding: theme.spacing.sm,
+    padding: 8,
   },
   notificationBadge: {
     position: 'absolute',
     top: 0,
     right: 0,
-    backgroundColor: theme.colors.error,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -420,23 +416,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   notificationBadgeText: {
-    color: theme.colors.surface,
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.bold,
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '700',
   },
   // Stories Section
   storiesContainer: {
-    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-    paddingVertical: theme.spacing.md,
+    paddingVertical: 12,
   },
   storiesList: {
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: 16,
   },
   storyItem: {
     alignItems: 'center',
-    marginRight: theme.spacing.lg,
+    marginRight: 16,
   },
   yourStoryCircle: {
     position: 'relative',
@@ -444,7 +438,6 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 35,
     borderWidth: 2,
-    borderColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -453,7 +446,6 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 35,
     borderWidth: 2,
-    borderColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -464,58 +456,51 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: theme.colors.surface,
   },
   addStoryText: {
-    color: theme.colors.surface,
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.bold,
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '700',
   },
   storyText: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.text.primary,
-    marginTop: theme.spacing.xs,
+    fontSize: 12,
+    marginTop: 4,
     maxWidth: 70,
   },
   // Feed Section
   feedList: {
-    paddingBottom: theme.spacing.xl,
+    paddingBottom: 24,
   },
   // Post Styles
   postContainer: {
-    backgroundColor: theme.colors.surface,
-    marginBottom: theme.spacing.lg,
+    marginBottom: 16,
   },
   postHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   userDetails: {
-    marginLeft: theme.spacing.md,
+    marginLeft: 12,
   },
   username: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
+    fontSize: 14,
+    fontWeight: '600',
   },
   location: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.text.secondary,
+    fontSize: 12,
     marginTop: 2,
   },
   postContent: {
-    backgroundColor: theme.colors.background,
   },
   bridgeImages: {
     flexDirection: 'row',
@@ -530,46 +515,69 @@ const styles = StyleSheet.create({
   },
   bridgeDivider: {
     width: 1,
-    backgroundColor: theme.colors.border,
   },
   postActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   leftActions: {
     flexDirection: 'row',
-    gap: theme.spacing.lg,
+    gap: 16,
   },
   actionButton: {
-    padding: theme.spacing.sm,
+    padding: 8,
   },
   postCaption: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.lg,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
   likesText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.sm,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   captionContainer: {
-    marginBottom: theme.spacing.sm,
+    marginBottom: 8,
   },
   captionText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.primary,
-    lineHeight: theme.fontSize.sm * 1.4,
-    marginBottom: theme.spacing.xs,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 4,
   },
   captionUsername: {
-    fontWeight: theme.fontWeight.semibold,
+    fontWeight: '600',
   },
   viewCommentsText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 14,
+  },
+  // AI Suggestions
+  suggestionCard: {
+    marginHorizontal: 16,
+    marginVertical: 8,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  suggestionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  suggestionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+    flex: 1,
+  },
+  suggestionScore: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  suggestionReason: {
+    fontSize: 14,
+    lineHeight: 20,
   },
 });

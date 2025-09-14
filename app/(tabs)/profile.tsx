@@ -9,15 +9,17 @@ import {
   Alert,
   FlatList,
   Dimensions,
+  Switch,
 } from 'react-native';
-import { MoreHorizontal, Share, Grid3X3, Bookmark, LogOut, Edit3, Bell, Shield, Trash2, Settings } from 'lucide-react-native';
+import { MoreHorizontal, Share, Grid3X3, Bookmark, LogOut, Edit3, Bell, Shield, Trash2, Settings, Moon, Sun } from 'lucide-react-native';
 import { Image } from 'expo-image';
-import { theme } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
 import Avatar from '@/components/ui/Avatar';
 import Button from '@/components/ui/Button';
 import ThemeChip from '@/components/ui/ThemeChip';
 
 export default function ProfileScreen() {
+  const { isDarkMode, toggleDarkMode, colors } = useTheme();
   const [user] = useState({
     displayName: 'Maria Rodriguez',
     username: 'maria_rome',
@@ -127,23 +129,23 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Instagram-style Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <View style={styles.headerTop}>
-          <Text style={styles.username}>{user.username}</Text>
+          <Text style={[styles.username, { color: colors.text.primary }]}>{user.username}</Text>
           <View style={styles.headerActions}>
             <TouchableOpacity 
               style={styles.headerButton}
               onPress={() => showComingSoon('Add Post')}
             >
-              <Text style={styles.addPostIcon}>+</Text>
+              <Text style={[styles.addPostIcon, { color: colors.text.primary }]}>+</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.headerButton}
               onPress={() => showComingSoon('Menu')}
             >
-              <MoreHorizontal size={24} color={theme.colors.text.primary} />
+              <MoreHorizontal size={24} color={colors.text.primary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -156,56 +158,56 @@ export default function ProfileScreen() {
             <Avatar uri={user.photoURL} size="large" />
             <View style={styles.statsContainer}>
               <View style={styles.stat}>
-                <Text style={styles.statNumber}>{user.stats.posts}</Text>
-                <Text style={styles.statLabel}>posts</Text>
+                <Text style={[styles.statNumber, { color: colors.text.primary }]}>{user.stats.posts}</Text>
+                <Text style={[styles.statLabel, { color: colors.text.secondary }]}>posts</Text>
               </View>
               <View style={styles.stat}>
-                <Text style={styles.statNumber}>{user.stats.followers}</Text>
-                <Text style={styles.statLabel}>followers</Text>
+                <Text style={[styles.statNumber, { color: colors.text.primary }]}>{user.stats.followers}</Text>
+                <Text style={[styles.statLabel, { color: colors.text.secondary }]}>followers</Text>
               </View>
               <View style={styles.stat}>
-                <Text style={styles.statNumber}>{user.stats.following}</Text>
-                <Text style={styles.statLabel}>following</Text>
+                <Text style={[styles.statNumber, { color: colors.text.primary }]}>{user.stats.following}</Text>
+                <Text style={[styles.statLabel, { color: colors.text.secondary }]}>following</Text>
               </View>
             </View>
           </View>
 
           {/* Bio */}
           <View style={styles.bioSection}>
-            <Text style={styles.displayName}>{user.displayName}</Text>
-            <Text style={styles.bio}>{user.bio}</Text>
+            <Text style={[styles.displayName, { color: colors.text.primary }]}>{user.displayName}</Text>
+            <Text style={[styles.bio, { color: colors.text.primary }]}>{user.bio}</Text>
           </View>
 
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
             <TouchableOpacity 
-              style={styles.editButton}
+              style={[styles.editButton, { backgroundColor: colors.primary }]}
               onPress={() => showComingSoon('Edit Profile')}
             >
-              <Text style={styles.editButtonText}>Edit profile</Text>
+              <Text style={[styles.editButtonText, { color: 'white' }]}>Edit profile</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={styles.shareButton}
+              style={[styles.shareButton, { borderColor: colors.border }]}
               onPress={() => showComingSoon('Share Profile')}
             >
-              <Share size={16} color={theme.colors.text.primary} />
+              <Share size={16} color={colors.text.primary} />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Tab Bar */}
-        <View style={styles.tabBar}>
+        <View style={[styles.tabBar, { borderTopColor: colors.border }]}>
           <TouchableOpacity 
             style={[styles.tab, selectedTab === 'posts' && styles.activeTab]}
             onPress={() => setSelectedTab('posts')}
           >
-            <Grid3X3 size={24} color={selectedTab === 'posts' ? theme.colors.text.primary : theme.colors.text.secondary} />
+            <Grid3X3 size={24} color={selectedTab === 'posts' ? colors.text.primary : colors.text.secondary} />
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.tab, selectedTab === 'saved' && styles.activeTab]}
             onPress={() => setSelectedTab('saved')}
           >
-            <Bookmark size={24} color={selectedTab === 'saved' ? theme.colors.text.primary : theme.colors.text.secondary} />
+            <Bookmark size={24} color={selectedTab === 'saved' ? colors.text.primary : colors.text.secondary} />
           </TouchableOpacity>
         </View>
 
@@ -222,21 +224,41 @@ export default function ProfileScreen() {
         </View>
 
         {/* Settings Section */}
-        <View style={styles.settingsSection}>
+        <View style={[styles.settingsSection, { backgroundColor: colors.surface }]}>
           <TouchableOpacity
             style={styles.settingsItem}
             onPress={() => showComingSoon('Settings')}
           >
-            <Settings size={20} color={theme.colors.text.secondary} />
-            <Text style={styles.settingsText}>Settings</Text>
+            <Settings size={20} color={colors.text.secondary} />
+            <Text style={[styles.settingsText, { color: colors.text.primary }]}>Settings</Text>
           </TouchableOpacity>
+          
+          {/* Dark Mode Toggle */}
+          <View style={styles.settingsItem}>
+            <View style={styles.settingsItemLeft}>
+              {isDarkMode ? (
+                <Moon size={20} color={colors.text.secondary} />
+              ) : (
+                <Sun size={20} color={colors.text.secondary} />
+              )}
+              <Text style={[styles.settingsText, { color: colors.text.primary }]}>
+                {isDarkMode ? 'Dark Mode' : 'Light Mode'}
+              </Text>
+            </View>
+            <Switch
+              value={isDarkMode}
+              onValueChange={toggleDarkMode}
+              trackColor={{ false: colors.border, true: colors.primary }}
+              thumbColor={isDarkMode ? colors.surface : colors.surface}
+            />
+          </View>
           
           <TouchableOpacity
             style={styles.settingsItem}
             onPress={handleSignOut}
           >
-            <LogOut size={20} color={theme.colors.error} />
-            <Text style={[styles.settingsText, { color: theme.colors.error }]}>Sign Out</Text>
+            <LogOut size={20} color={colors.error} />
+            <Text style={[styles.settingsText, { color: colors.error }]}>Sign Out</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -247,109 +269,95 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
   },
   // Instagram-style Header
   header: {
-    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.md,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   username: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
+    fontSize: 18,
+    fontWeight: '600',
   },
   headerActions: {
     flexDirection: 'row',
-    gap: theme.spacing.lg,
+    gap: 16,
   },
   headerButton: {
-    padding: theme.spacing.sm,
+    padding: 8,
   },
   addPostIcon: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
+    fontSize: 20,
+    fontWeight: '700',
   },
   content: {
     flex: 1,
   },
   // Profile Section
   profileSection: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   profileTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
+    marginBottom: 16,
   },
   statsContainer: {
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginLeft: theme.spacing.xl,
+    marginLeft: 24,
   },
   stat: {
     alignItems: 'center',
   },
   statNumber: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
+    fontSize: 18,
+    fontWeight: '700',
   },
   statLabel: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
+    fontSize: 14,
     marginTop: 2,
   },
   bioSection: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: 16,
   },
   displayName: {
-    fontSize: theme.fontSize.base,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.xs,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
   },
   bio: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.primary,
-    lineHeight: theme.fontSize.sm * 1.4,
+    fontSize: 14,
+    lineHeight: 20,
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: theme.spacing.sm,
+    gap: 8,
   },
   editButton: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.sm,
-    paddingVertical: theme.spacing.sm,
+    borderRadius: 8,
+    paddingVertical: 8,
     alignItems: 'center',
   },
   editButtonText: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
+    fontSize: 14,
+    fontWeight: '600',
   },
   shareButton: {
-    backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.sm,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -357,28 +365,23 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
   },
   tab: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: theme.spacing.md,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomColor: theme.colors.text.primary,
   },
   // Posts Grid
   postsGrid: {
-    backgroundColor: theme.colors.background,
   },
   gridContainer: {
     padding: 1,
   },
   postItem: {
-    backgroundColor: theme.colors.surface,
     margin: 1,
     position: 'relative',
   },
@@ -402,26 +405,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   postLikes: {
-    color: theme.colors.surface,
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semibold,
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
   },
   // Settings Section
   settingsSection: {
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
   },
   settingsItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
+    gap: 12,
+    paddingVertical: 12,
   },
   settingsText: {
-    fontSize: theme.fontSize.base,
-    color: theme.colors.text.primary,
+    fontSize: 16,
+  },
+  settingsItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
 });

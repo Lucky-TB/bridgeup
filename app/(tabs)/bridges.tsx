@@ -11,6 +11,7 @@ import {
 import { Image } from 'expo-image';
 import { Calendar, Heart, Eye, MessageCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { useTheme } from '@/contexts/ThemeContext';
 import { theme } from '@/constants/theme';
 import Avatar from '@/components/ui/Avatar';
 import ThemeChip from '@/components/ui/ThemeChip';
@@ -43,6 +44,7 @@ interface BridgeItem {
 }
 
 export default function BridgesScreen() {
+  const { colors } = useTheme();
   const { bridges, loading, refreshBridges } = useBridges();
   const [bridgesWithSnapshots, setBridgesWithSnapshots] = useState<Array<BridgeItem>>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -99,12 +101,12 @@ export default function BridgesScreen() {
   };
 
   const renderBridge = ({ item }: { item: BridgeItem }) => (
-    <View style={styles.bridgeCard}>
+    <View style={[styles.bridgeCard, { backgroundColor: colors.surface }]}>
       <View style={styles.bridgeHeader}>
         <View style={styles.bridgeInfo}>
           <View style={styles.themes}>
             {item.themes.slice(0, 2).map((themeId) => {
-              const t = theme.themes.find(theme => theme.id === themeId);
+              const t = theme.themes.find(t => t.id === themeId);
               return t ? (
                 <ThemeChip 
                   key={themeId} 
@@ -116,8 +118,8 @@ export default function BridgesScreen() {
             })}
           </View>
           <View style={styles.dateRow}>
-            <Calendar size={14} color={theme.colors.text.muted} />
-            <Text style={styles.dateText}>{formatDate(item.createdAt)}</Text>
+            <Calendar size={14} color={colors.text.muted} />
+            <Text style={[styles.dateText, { color: colors.text.muted }]}>{formatDate(item.createdAt)}</Text>
           </View>
         </View>
         <Avatar uri={item.snapshots.theirs.user.photoURL} size="small" />
@@ -125,13 +127,13 @@ export default function BridgesScreen() {
 
       <View style={styles.mediaRow}>
         <View style={styles.snapshotContainer}>
-          <Text style={styles.snapshotLabel}>You</Text>
+          <Text style={[styles.snapshotLabel, { color: colors.text.primary }]}>You</Text>
           <Image 
             source={{ uri: item.snapshots.yours.mediaPath }}
             style={styles.snapshotImage}
             contentFit="cover"
           />
-          <Text style={styles.snapshotText} numberOfLines={2}>
+          <Text style={[styles.snapshotText, { color: colors.text.primary }]} numberOfLines={2}>
             {item.snapshots.yours.text}
           </Text>
         </View>
@@ -139,7 +141,7 @@ export default function BridgesScreen() {
         <View style={styles.divider} />
 
         <View style={styles.snapshotContainer}>
-          <Text style={styles.snapshotLabel}>
+          <Text style={[styles.snapshotLabel, { color: colors.text.primary }]}>
             {item.snapshots.theirs.user.displayName}
           </Text>
           <Image 
@@ -147,7 +149,7 @@ export default function BridgesScreen() {
             style={styles.snapshotImage}
             contentFit="cover"
           />
-          <Text style={styles.snapshotText} numberOfLines={2}>
+          <Text style={[styles.snapshotText, { color: colors.text.primary }]} numberOfLines={2}>
             {item.snapshots.theirs.text}
           </Text>
         </View>
@@ -155,17 +157,17 @@ export default function BridgesScreen() {
 
       <View style={styles.metrics}>
         <View style={styles.metric}>
-          <Eye size={16} color={theme.colors.text.muted} />
-          <Text style={styles.metricText}>{item.metrics.views}</Text>
+          <Eye size={16} color={colors.text.muted} />
+          <Text style={[styles.metricText, { color: colors.text.muted }]}>{item.metrics.views}</Text>
         </View>
         <View style={styles.metric}>
-          <Heart size={16} color={theme.colors.text.muted} />
-          <Text style={styles.metricText}>{item.metrics.likes}</Text>
+          <Heart size={16} color={colors.text.muted} />
+          <Text style={[styles.metricText, { color: colors.text.muted }]}>{item.metrics.likes}</Text>
         </View>
       </View>
 
       <TouchableOpacity 
-        style={styles.chatButton}
+        style={[styles.chatButton, { backgroundColor: colors.primary }]}
         onPress={() => router.push(`/chat/${item.id}`)}
         activeOpacity={0.8}
       >
@@ -177,18 +179,18 @@ export default function BridgesScreen() {
 
   const renderEmpty = () => (
     <View style={styles.emptyState}>
-      <Text style={styles.emptyTitle}>No bridges yet</Text>
-      <Text style={styles.emptySubtitle}>
+      <Text style={[styles.emptyTitle, { color: colors.text.primary }]}>No bridges yet</Text>
+      <Text style={[styles.emptySubtitle, { color: colors.text.secondary }]}>
         Create your first snapshot to start building bridges with others
       </Text>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Your Bridges</Text>
-        <Text style={styles.subtitle}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <Text style={[styles.title, { color: colors.text.primary }]}>Your Bridges</Text>
+        <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
           {bridgesWithSnapshots.length} bridge{bridgesWithSnapshots.length !== 1 ? 's' : ''} created
         </Text>
       </View>

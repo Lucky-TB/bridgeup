@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Camera, Image as ImageIcon, Mic, Video, Sparkles } from 'lucide-react-native';
+import { useTheme } from '@/contexts/ThemeContext';
 import { theme } from '@/constants/theme';
 import Button from '@/components/ui/Button';
 import ThemeChip from '@/components/ui/ThemeChip';
@@ -22,12 +23,13 @@ import { BridgeService } from '@/lib/services/bridge-service';
 type Step = 'theme' | 'media' | 'preview';
 
 export default function CreateScreen() {
+  const { colors } = useTheme();
   const { refreshBridges } = useBridges();
   const [currentStep, setCurrentStep] = useState<Step>('theme');
   const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [text, setText] = useState('');
   const [mediaUri, setMediaUri] = useState<string | null>(null);
-  const [mediaType, setMediaType] = useState<'photo' | 'video' | 'audio' | null>(null);
+  const [mediaType, setMediaType] = useState<'photo' | 'video' | null>(null);
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
@@ -228,22 +230,22 @@ export default function CreateScreen() {
       ) : (
         <View style={styles.mediaOptions}>
           <TouchableOpacity style={styles.mediaOption} onPress={handleTakePhoto}>
-            <Camera size={32} color={theme.colors.primary} />
+            <Camera size={32} color={colors.primary} />
             <Text style={styles.mediaOptionText}>Take Photo</Text>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.mediaOption} onPress={handlePickImage}>
-            <ImageIcon size={32} color={theme.colors.primary} />
+            <ImageIcon size={32} color={colors.primary} />
             <Text style={styles.mediaOptionText}>Choose Photo</Text>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.mediaOption} onPress={handleRecordVideo}>
-            <Video size={32} color={theme.colors.primary} />
+            <Video size={32} color={colors.primary} />
             <Text style={styles.mediaOptionText}>Record Video</Text>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.mediaOption} onPress={handlePickVideo}>
-            <Video size={32} color={theme.colors.primary} />
+            <Video size={32} color={colors.primary} />
             <Text style={styles.mediaOptionText}>Choose Video</Text>
           </TouchableOpacity>
         </View>
@@ -257,7 +259,7 @@ export default function CreateScreen() {
             onPress={generateAISuggestions}
             disabled={isGeneratingAI}
           >
-            <Sparkles size={16} color={theme.colors.primary} />
+            <Sparkles size={16} color={colors.primary} />
             <Text style={styles.aiButtonText}>
               {isGeneratingAI ? 'Generating...' : 'AI Help'}
             </Text>
@@ -352,9 +354,9 @@ export default function CreateScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Create</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { backgroundColor: colors.surface }]}>
+        <Text style={[styles.title, { color: colors.text.primary }]}>Create</Text>
         <View style={styles.progress}>
           <View style={[styles.progressDot, currentStep !== 'theme' && styles.progressDotActive]} />
           <View style={[styles.progressDot, currentStep === 'preview' && styles.progressDotActive]} />
@@ -374,95 +376,84 @@ export default function CreateScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
   },
   header: {
-    paddingTop: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.lg,
-    backgroundColor: theme.colors.surface,
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
   },
   title: {
-    fontSize: theme.fontSize['3xl'],
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.md,
+    fontSize: 30,
+    fontWeight: '700',
+    marginBottom: 12,
   },
   progress: {
     flexDirection: 'row',
-    gap: theme.spacing.sm,
+    gap: 8,
   },
   progressDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: theme.colors.border,
   },
   progressDotActive: {
-    backgroundColor: theme.colors.primary,
   },
   content: {
     flex: 1,
   },
   stepContainer: {
-    padding: theme.spacing.lg,
+    padding: 16,
   },
   stepTitle: {
-    fontSize: theme.fontSize['2xl'],
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.sm,
+    fontSize: 24,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   stepSubtitle: {
-    fontSize: theme.fontSize.base,
-    color: theme.colors.text.secondary,
-    marginBottom: theme.spacing.xl,
+    fontSize: 16,
+    marginBottom: 24,
   },
   themesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing['2xl'],
+    gap: 12,
+    marginBottom: 32,
   },
   themeGridItem: {
-    marginBottom: theme.spacing.sm,
+    marginBottom: 8,
   },
   continueButton: {
-    marginTop: theme.spacing.lg,
+    marginTop: 16,
   },
   mediaOptions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.xl,
+    gap: 12,
+    marginBottom: 24,
   },
   mediaOption: {
     width: '48%',
     alignItems: 'center',
-    padding: theme.spacing.lg,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
+    padding: 16,
+    borderRadius: 12,
     borderWidth: 2,
-    borderColor: theme.colors.border,
     borderStyle: 'dashed',
   },
   mediaOptionText: {
-    marginTop: theme.spacing.sm,
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.text.secondary,
+    marginTop: 8,
+    fontSize: 14,
+    fontWeight: '500',
     textAlign: 'center',
   },
   mediaPreview: {
-    marginBottom: theme.spacing.xl,
+    marginBottom: 24,
   },
   previewImage: {
     width: '100%',
     height: 240,
-    borderRadius: theme.borderRadius.lg,
-    marginBottom: theme.spacing.sm,
+    borderRadius: 12,
+    marginBottom: 8,
   },
   mediaInfo: {
     flexDirection: 'row',
@@ -470,89 +461,76 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   mediaTypeText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 14,
+    fontWeight: '500',
   },
   changeMediaButton: {
-    padding: theme.spacing.sm,
+    padding: 8,
   },
   changeMediaText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 14,
+    fontWeight: '500',
   },
   textInputContainer: {
-    marginBottom: theme.spacing.xl,
+    marginBottom: 24,
   },
   textInputHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: theme.spacing.sm,
+    marginBottom: 8,
   },
   textInputLabel: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.text.primary,
+    fontSize: 14,
+    fontWeight: '500',
   },
   aiButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    backgroundColor: theme.colors.primary + '10',
-    borderRadius: theme.borderRadius.sm,
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
   aiButtonText: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.medium,
+    fontSize: 12,
+    fontWeight: '500',
   },
   textInput: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.lg,
-    fontSize: theme.fontSize.base,
+    borderRadius: 8,
+    padding: 16,
+    fontSize: 16,
     textAlignVertical: 'top',
     borderWidth: 1,
-    borderColor: theme.colors.border,
   },
   characterCount: {
     textAlign: 'right',
-    marginTop: theme.spacing.sm,
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.text.muted,
+    marginTop: 8,
+    fontSize: 12,
   },
   aiSuggestions: {
-    marginTop: theme.spacing.md,
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.primary + '05',
-    borderRadius: theme.borderRadius.md,
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: theme.colors.primary + '20',
   },
   aiSuggestionsTitle: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.primary,
-    marginBottom: theme.spacing.sm,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   aiSuggestionItem: {
-    paddingVertical: theme.spacing.sm,
+    paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
   },
   aiSuggestionText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
-    lineHeight: theme.fontSize.sm * 1.4,
+    fontSize: 14,
+    lineHeight: 20,
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: theme.spacing.md,
-    marginTop: theme.spacing.lg,
+    gap: 12,
+    marginTop: 16,
   },
   backButton: {
     flex: 1,
@@ -564,10 +542,9 @@ const styles = StyleSheet.create({
     flex: 2,
   },
   previewCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.xl,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -576,18 +553,17 @@ const styles = StyleSheet.create({
   },
   previewThemes: {
     flexDirection: 'row',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
+    gap: 8,
+    marginBottom: 12,
   },
   previewCardImage: {
     width: '100%',
     height: 240,
-    borderRadius: theme.borderRadius.md,
-    marginBottom: theme.spacing.md,
+    borderRadius: 8,
+    marginBottom: 12,
   },
   previewText: {
-    fontSize: theme.fontSize.base,
-    color: theme.colors.text.primary,
-    lineHeight: theme.fontSize.base * 1.4,
+    fontSize: 16,
+    lineHeight: 22,
   },
 });

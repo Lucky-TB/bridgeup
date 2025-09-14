@@ -1,25 +1,27 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Chrome as Home, Plus, Badge as Bridge, User } from 'lucide-react-native';
-import { theme } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function TabLayout() {
+  const { colors } = useTheme();
+  
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.text.secondary,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.text.secondary,
         tabBarStyle: {
-          backgroundColor: theme.colors.surface,
-          borderTopColor: theme.colors.border,
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
           borderTopWidth: 1,
-          paddingTop: theme.spacing.xs,
+          paddingTop: 4,
           height: 84,
         },
         tabBarLabelStyle: {
-          fontSize: theme.fontSize.xs,
-          fontWeight: theme.fontWeight.medium,
+          fontSize: 12,
+          fontWeight: '500',
         },
       }}
     >
