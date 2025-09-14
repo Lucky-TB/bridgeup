@@ -21,7 +21,7 @@ export default function ProfileScreen() {
   const [user] = useState({
     displayName: 'Maria Rodriguez',
     username: 'maria_rome',
-    photoURL: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?w=150',
+    photoURL: '',
     bio: 'Food lover from Rome 🍝\nSharing my culinary adventures\n📍 Rome, Italy',
     city: 'Rome, Italy',
     themes: ['food', 'places', 'language'],

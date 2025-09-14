@@ -9,7 +9,8 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { Calendar, Heart, Eye } from 'lucide-react-native';
+import { Calendar, Heart, Eye, MessageCircle } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { theme } from '@/constants/theme';
 import Avatar from '@/components/ui/Avatar';
 import ThemeChip from '@/components/ui/ThemeChip';
@@ -45,6 +46,7 @@ export default function BridgesScreen() {
   const { bridges, loading, refreshBridges } = useBridges();
   const [bridgesWithSnapshots, setBridgesWithSnapshots] = useState<Array<BridgeItem>>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
 
   const loadBridgesWithSnapshots = async () => {
     try {
@@ -64,7 +66,7 @@ export default function BridgesScreen() {
             text: bridge.rightSnapshot.text,
             user: {
               displayName: bridge.rightSnapshot.userId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-              photoURL: 'https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?w=150',
+              photoURL: '',
               city: 'Global',
             },
           },
@@ -97,7 +99,7 @@ export default function BridgesScreen() {
   };
 
   const renderBridge = ({ item }: { item: BridgeItem }) => (
-    <TouchableOpacity style={styles.bridgeCard} activeOpacity={0.8}>
+    <View style={styles.bridgeCard}>
       <View style={styles.bridgeHeader}>
         <View style={styles.bridgeInfo}>
           <View style={styles.themes}>
@@ -161,7 +163,16 @@ export default function BridgesScreen() {
           <Text style={styles.metricText}>{item.metrics.likes}</Text>
         </View>
       </View>
-    </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={styles.chatButton}
+        onPress={() => router.push(`/chat/${item.id}`)}
+        activeOpacity={0.8}
+      >
+        <MessageCircle size={16} color="white" />
+        <Text style={styles.chatButtonText}>Start Skill Sharing Chat</Text>
+      </TouchableOpacity>
+    </View>
   );
 
   const renderEmpty = () => (
@@ -326,5 +337,21 @@ const styles = StyleSheet.create({
     color: theme.colors.text.secondary,
     textAlign: 'center',
     lineHeight: theme.fontSize.base * 1.4,
+  },
+  chatButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primary,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.lg,
+    marginTop: theme.spacing.lg,
+    gap: theme.spacing.sm,
+  },
+  chatButtonText: {
+    color: 'white',
+    fontSize: theme.fontSize.base,
+    fontWeight: theme.fontWeight.semibold,
   },
 });

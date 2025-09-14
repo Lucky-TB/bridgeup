@@ -21,7 +21,7 @@ const PLACEHOLDER_BRIDGES: PlaceholderBridge[] = [
     mediaPath: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg',
     user: {
       displayName: 'Marco',
-      photoURL: 'https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?w=150',
+      photoURL: '',
       city: 'Rome'
     }
   },
@@ -32,7 +32,7 @@ const PLACEHOLDER_BRIDGES: PlaceholderBridge[] = [
     mediaPath: 'https://images.pexels.com/photos/1699161/pexels-photo-1699161.jpeg',
     user: {
       displayName: 'Carmen',
-      photoURL: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=150',
+      photoURL: '',
       city: 'Seville'
     }
   },
@@ -43,7 +43,7 @@ const PLACEHOLDER_BRIDGES: PlaceholderBridge[] = [
     mediaPath: 'https://images.pexels.com/photos/1751731/pexels-photo-1751731.jpeg',
     user: {
       displayName: 'Klaus',
-      photoURL: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?w=150',
+      photoURL: '',
       city: 'Berlin'
     }
   },
@@ -54,7 +54,7 @@ const PLACEHOLDER_BRIDGES: PlaceholderBridge[] = [
     mediaPath: 'https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg',
     user: {
       displayName: 'Wei',
-      photoURL: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?w=150',
+      photoURL: '',
       city: 'Hong Kong'
     }
   },
@@ -65,7 +65,7 @@ const PLACEHOLDER_BRIDGES: PlaceholderBridge[] = [
     mediaPath: 'https://images.pexels.com/photos/1751731/pexels-photo-1751731.jpeg',
     user: {
       displayName: 'Louis',
-      photoURL: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?w=150',
+      photoURL: '',
       city: 'New Orleans'
     }
   }

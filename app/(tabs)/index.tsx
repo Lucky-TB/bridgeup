@@ -113,10 +113,10 @@ export default function TodayScreen() {
   };
 
   const mockUsers = {
-    user1: { id: 'user1', displayName: 'Maria', photoURL: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?w=150', city: 'Rome', themes: ['food'], createdAt: new Date(), updatedAt: new Date() },
-    user2: { id: 'user2', displayName: 'Alex', photoURL: 'https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?w=150', city: 'Bangkok', themes: ['food'], createdAt: new Date(), updatedAt: new Date() },
-    user3: { id: 'user3', displayName: 'Jordan', photoURL: 'https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?w=150', city: 'London', themes: ['music'], createdAt: new Date(), updatedAt: new Date() },
-    user4: { id: 'user4', displayName: 'Sam', photoURL: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?w=150', city: 'New York', themes: ['music'], createdAt: new Date(), updatedAt: new Date() },
+    user1: { id: 'user1', displayName: 'Maria', photoURL: '', city: 'Rome', themes: ['food'], createdAt: new Date(), updatedAt: new Date() },
+    user2: { id: 'user2', displayName: 'Alex', photoURL: '', city: 'Bangkok', themes: ['food'], createdAt: new Date(), updatedAt: new Date() },
+    user3: { id: 'user3', displayName: 'Jordan', photoURL: '', city: 'London', themes: ['music'], createdAt: new Date(), updatedAt: new Date() },
+    user4: { id: 'user4', displayName: 'Sam', photoURL: '', city: 'New York', themes: ['music'], createdAt: new Date(), updatedAt: new Date() },
   };
 
   useEffect(() => {
