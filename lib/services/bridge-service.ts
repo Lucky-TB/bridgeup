@@ -1,9 +1,64 @@
 import { Bridge, Snapshot } from '@/lib/types';
+import { AIMatchingService } from './ai-matching-service';
 
 // In-memory storage for demo purposes
 // In a real app, this would be Firebase Firestore
 let bridges: Bridge[] = [];
 let snapshots: Snapshot[] = [];
+
+// Initialize with some placeholder data
+const initializePlaceholderData = () => {
+  if (bridges.length === 0) {
+    // Create some initial snapshots
+    const initialSnapshots: Snapshot[] = [
+      {
+        id: 'init_snapshot_1',
+        userId: 'marco',
+        mediaType: 'photo',
+        mediaPath: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg',
+        text: 'Traditional Italian pasta making with my nonna - the secret is in the hand-rolled technique passed down for generations',
+        themes: ['food'],
+        locale: 'en',
+        pendingMatch: false,
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        likeCount: 5,
+        saveCount: 2,
+      },
+      {
+        id: 'init_snapshot_2',
+        userId: 'carmen',
+        mediaType: 'photo',
+        mediaPath: 'https://images.pexels.com/photos/1699161/pexels-photo-1699161.jpeg',
+        text: 'Learning flamenco guitar in Seville - the passion and rhythm that connects generations',
+        themes: ['music'],
+        locale: 'en',
+        pendingMatch: false,
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+        likeCount: 8,
+        saveCount: 3,
+      }
+    ];
+
+    // Create initial bridge
+    const initialBridge: Bridge = {
+      id: 'init_bridge_1',
+      leftSnapshotId: initialSnapshots[0].id,
+      rightSnapshotId: initialSnapshots[1].id,
+      themes: ['food', 'music'],
+      createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+      metrics: {
+        views: 15,
+        likes: 7,
+      },
+    };
+
+    snapshots.push(...initialSnapshots);
+    bridges.push(initialBridge);
+  }
+};
+
+// Initialize on first load
+initializePlaceholderData();
 
 export class BridgeService {
   static async createSnapshot(snapshotData: Omit<Snapshot, 'id' | 'createdAt' | 'likeCount' | 'saveCount'>): Promise<Snapshot> {
@@ -76,27 +131,54 @@ export class BridgeService {
   }
 
   static async simulateAIMatching(snapshot: Snapshot): Promise<Snapshot | null> {
-    // Simulate AI finding a matching snapshot
-    // In a real app, this would use AI matching service
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing time
-    
-    // For demo, create a mock matching snapshot
-    const mockMatchingSnapshot: Snapshot = {
-      id: `snapshot_match_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      userId: 'mock_user_id',
-      mediaType: 'photo',
-      mediaPath: 'https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg',
-      text: 'A matching cultural moment from someone else',
-      themes: snapshot.themes,
-      locale: 'en',
-      pendingMatch: false,
-      createdAt: new Date(),
-      likeCount: 0,
-      saveCount: 0,
-    };
-    
-    snapshots.push(mockMatchingSnapshot);
-    return mockMatchingSnapshot;
+    try {
+      // Use AI to find the best matching placeholder bridge
+      const matchedBridge = await AIMatchingService.findBestMatch(snapshot);
+      
+      if (!matchedBridge) {
+        return null;
+      }
+      
+      // Create a snapshot from the matched placeholder bridge
+      const matchingSnapshot: Snapshot = {
+        id: `snapshot_match_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        userId: matchedBridge.user.displayName.toLowerCase().replace(' ', '_'),
+        mediaType: 'photo',
+        mediaPath: matchedBridge.mediaPath,
+        text: matchedBridge.description,
+        themes: matchedBridge.themes,
+        locale: 'en',
+        pendingMatch: false,
+        createdAt: new Date(),
+        likeCount: 0,
+        saveCount: 0,
+      };
+      
+      snapshots.push(matchingSnapshot);
+      return matchingSnapshot;
+    } catch (error) {
+      console.error('Error in AI matching:', error);
+      // Fallback to random placeholder
+      const placeholderBridges = AIMatchingService.getAllPlaceholderBridges();
+      const randomBridge = placeholderBridges[Math.floor(Math.random() * placeholderBridges.length)];
+      
+      const fallbackSnapshot: Snapshot = {
+        id: `snapshot_fallback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        userId: randomBridge.user.displayName.toLowerCase().replace(' ', '_'),
+        mediaType: 'photo',
+        mediaPath: randomBridge.mediaPath,
+        text: randomBridge.description,
+        themes: randomBridge.themes,
+        locale: 'en',
+        pendingMatch: false,
+        createdAt: new Date(),
+        likeCount: 0,
+        saveCount: 0,
+      };
+      
+      snapshots.push(fallbackSnapshot);
+      return fallbackSnapshot;
+    }
   }
 
   static async createBridgeFromSnapshot(snapshot: Snapshot): Promise<Bridge | null> {

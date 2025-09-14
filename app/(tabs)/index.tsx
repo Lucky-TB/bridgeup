@@ -131,25 +131,32 @@ export default function TodayScreen() {
 
   const loadAISuggestions = async () => {
     try {
-      const suggestions = await AIMatchingService.getBridgeSuggestions(
-        mockUsers.user1, // Demo user
-        Object.values(mockSnapshots),
-        Object.values(mockUsers)
-      );
-      setAiSuggestions(suggestions.topBridges);
+      // Get placeholder bridges as suggestions
+      const placeholderBridges = AIMatchingService.getAllPlaceholderBridges();
+      const suggestions = placeholderBridges.map(bridge => ({
+        id: bridge.id,
+        themes: bridge.themes,
+        description: bridge.description,
+        mediaPath: bridge.mediaPath,
+        user: bridge.user
+      }));
+      setAiSuggestions(suggestions);
     } catch (error) {
       console.error('Error loading AI suggestions:', error);
+      setAiSuggestions([]);
     }
   };
 
   const loadUserStats = () => {
-    const stats = GamificationService.calculateUserStats(
-      mockUsers.user1,
-      Object.values(mockSnapshots).filter(s => s.userId === 'user1'),
-      mockBridges.filter(b => b.leftSnapshotId === 'snap1' || b.rightSnapshotId === 'snap1'),
-      mockBridges,
-      Object.values(mockUsers)
-    );
+    // Mock user stats for demo
+    const stats = {
+      bridgesCreated: 0,
+      snapshotsShared: 0,
+      countriesConnected: 0,
+      themesExplored: 0,
+      totalLikes: 0,
+      totalViews: 0
+    };
     setUserStats(stats);
   };
 

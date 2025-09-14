@@ -63,9 +63,9 @@ export default function BridgesScreen() {
             mediaPath: bridge.rightSnapshot.mediaPath,
             text: bridge.rightSnapshot.text,
             user: {
-              displayName: 'Matched User', // In a real app, this would come from user data
+              displayName: bridge.rightSnapshot.userId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
               photoURL: 'https://images.pexels.com/photos/697509/pexels-photo-697509.jpeg?w=150',
-              city: 'Unknown',
+              city: 'Global',
             },
           },
         },

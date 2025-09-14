@@ -266,7 +266,7 @@ export default function CreateScreen() {
         
         <TextInput
           style={styles.textInput}
-          placeholder="Share your cultural moment in a few words... (optional)"
+          placeholder="Share your cultural moment in a few words..."
           value={text}
           onChangeText={setText}
           maxLength={200}
@@ -301,7 +301,7 @@ export default function CreateScreen() {
         <Button
           title="Preview"
           onPress={() => setCurrentStep('preview')}
-          disabled={!mediaUri}
+          disabled={!mediaUri || !text.trim()}
           style={styles.previewButton}
         />
       </View>
